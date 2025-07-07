@@ -1,14 +1,10 @@
 
 // AI Service for generating stories
-// Note: This requires an API key to be set by the user
+// Using provided API key
 
 export const generateStoryWithAI = async (choices: Record<string, string>): Promise<string> => {
-  // Get API key from localStorage (user input)
-  const apiKey = localStorage.getItem('openai_api_key');
-  
-  if (!apiKey) {
-    throw new Error('API key is required. Please set your OpenAI API key first.');
-  }
+  // Use the provided API key directly
+  const apiKey = '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';
 
   const isYoung = choices.ageGroup === 'young';
   const ageText = isYoung ? 'jonge kinderen (3-6 jaar)' : 'oudere kinderen (7-12 jaar)';
@@ -89,6 +85,6 @@ Schrijf het verhaal in een warme, verhalende toon alsof een ouder het voorleest.
     return data.choices[0].message.content;
   } catch (error) {
     console.error('AI story generation failed:', error);
-    throw new Error('Het genereren van het verhaal is mislukt. Controleer je internetverbinding en API key.');
+    throw new Error('Het genereren van het verhaal is mislukt. Controleer je internetverbinding.');
   }
 };
