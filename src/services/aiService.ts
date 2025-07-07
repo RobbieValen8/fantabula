@@ -61,7 +61,7 @@ Schrijf het verhaal in een warme, verhalende toon alsof een ouder het voorleest.
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
