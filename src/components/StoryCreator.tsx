@@ -58,13 +58,21 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
 
   const generateStory = async () => {
     setIsGenerating(true);
+    console.log('Starting story generation with choices:', storyChoices);
     
     try {
       const storyContent = await generateStoryWithAI(storyChoices);
       
+      const characterNames = {
+        princess: 'de Prinses',
+        knight: 'de Ridder', 
+        animal: 'het Dier',
+        child: 'het Kind'
+      };
+      
       const newStory: Story = {
         id: crypto.randomUUID(),
-        title: `Verhaal van ${storyChoices.character === 'princess' ? 'de prinses' : storyChoices.character === 'knight' ? 'de ridder' : storyChoices.character === 'animal' ? 'het dier' : 'het kind'}`,
+        title: `Het Verhaal van ${characterNames[storyChoices.character as keyof typeof characterNames]}`,
         story: storyContent,
         choices: storyChoices,
         ageGroup: storyChoices.ageGroup === 'young' ? '3-6 jaar' : '7-12 jaar',
@@ -76,7 +84,8 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
       const existingStories = JSON.parse(localStorage.getItem(`stories_${currentUser}`) || "[]") as Story[];
       existingStories.unshift(newStory);
       localStorage.setItem(`stories_${currentUser}`, JSON.stringify(existingStories));
-
+      
+      console.log('Story saved successfully');
       setGeneratedStory(newStory);
       setIsGenerating(false);
       toast.success("Je verhaal is klaar! 📖✨");
@@ -89,12 +98,19 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
 
   const handleChoice = (value: string) => {
     const questionKey = ['ageGroup', 'character', 'setting', 'adventure'][currentStep];
-    setStoryChoices({ ...storyChoices, [questionKey]: value });
+    const newChoices = { ...storyChoices, [questionKey]: value };
+    setStoryChoices(newChoices);
+    
+    console.log(`Step ${currentStep}: ${questionKey} = ${value}`);
     
     if (currentStep < storyQuestions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      generateStory();
+      console.log('All choices made, generating story...');
+      // Use the updated choices directly for generation
+      setTimeout(() => {
+        generateStory();
+      }, 100);
     }
   };
 
