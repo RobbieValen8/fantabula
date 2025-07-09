@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Story } from "@/types/Story";
 import { generateStoryWithAI } from "@/services/aiService";
@@ -21,37 +21,49 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
 
   const storyQuestions = [
     {
+      id: "age",
+      title: "Leeftijd kiezen",
       question: "Voor welke leeftijd is dit verhaal?",
+      description: "Kies de leeftijdsgroep voor je verhaal",
       options: [
-        { value: "young", label: "3-6 jaar (kort verhaal)", emoji: "👶", description: "5 minuten voorlezen" },
-        { value: "older", label: "7-12 jaar (lang verhaal)", emoji: "🧒", description: "10 minuten voorlezen" }
+        { value: "young", label: "3-6 jaar", emoji: "👶", description: "Kort verhaal (5 minuten voorlezen)" },
+        { value: "older", label: "7-12 jaar", emoji: "🧒", description: "Lang verhaal (10 minuten voorlezen)" }
       ]
     },
     {
+      id: "character",
+      title: "Hoofdpersoon kiezen",
       question: "Wie is de hoofdpersoon van het verhaal?",
+      description: "Kies wie de held van je verhaal wordt",
       options: [
-        { value: "princess", label: "Een dappere prinses", emoji: "👑" },
-        { value: "knight", label: "Een moedige ridder", emoji: "⚔️" },
-        { value: "animal", label: "Een slim dier", emoji: "🦊" },
-        { value: "child", label: "Een avontuurlijk kind", emoji: "🧒" }
+        { value: "princess", label: "Een dappere prinses", emoji: "👑", description: "Moedig en slim" },
+        { value: "knight", label: "Een moedige ridder", emoji: "⚔️", description: "Sterk en eerlijk" },
+        { value: "animal", label: "Een slim dier", emoji: "🦊", description: "Grappig en vindingrijk" },
+        { value: "child", label: "Een avontuurlijk kind", emoji: "🧒", description: "Nieuwsgierig en dapper" }
       ]
     },
     {
+      id: "setting",
+      title: "Locatie kiezen",
       question: "Waar speelt het verhaal zich af?",
+      description: "Kies de prachtige wereld voor je avontuur",
       options: [
-        { value: "castle", label: "In een magisch kasteel", emoji: "🏰" },
-        { value: "forest", label: "In een betoverd bos", emoji: "🌲" },
-        { value: "ocean", label: "Onder de zee", emoji: "🌊" },
-        { value: "space", label: "In de ruimte", emoji: "🚀" }
+        { value: "castle", label: "In een magisch kasteel", emoji: "🏰", description: "Vol geheime kamers en mysteries" },
+        { value: "forest", label: "In een betoverd bos", emoji: "🌲", description: "Met sprekende dieren en magie" },
+        { value: "ocean", label: "Onder de zee", emoji: "🌊", description: "Bij zeemeerminnen en vissen" },
+        { value: "space", label: "In de ruimte", emoji: "🚀", description: "Tussen sterren en planeten" }
       ]
     },
     {
+      id: "adventure",
+      title: "Avontuur kiezen",
       question: "Wat voor avontuur wil je beleven?",
+      description: "Kies het spannende avontuur dat je wilt meemaken",
       options: [
-        { value: "treasure", label: "Een schat zoeken", emoji: "💎" },
-        { value: "rescue", label: "Iemand redden", emoji: "🦸" },
-        { value: "friendship", label: "Nieuwe vrienden maken", emoji: "🤝" },
-        { value: "magic", label: "Magie leren", emoji: "🔮" }
+        { value: "treasure", label: "Een schat zoeken", emoji: "💎", description: "Op zoek naar verborgen schatten" },
+        { value: "rescue", label: "Iemand redden", emoji: "🦸", description: "Een vriend in nood helpen" },
+        { value: "friendship", label: "Nieuwe vrienden maken", emoji: "🤝", description: "Bijzondere vriendschappen sluiten" },
+        { value: "magic", label: "Magie leren", emoji: "🔮", description: "Toveren en betovering ontdekken" }
       ]
     }
   ];
@@ -107,10 +119,17 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
       setCurrentStep(currentStep + 1);
     } else {
       console.log('All choices made, generating story...');
-      // Use the updated choices directly for generation
       setTimeout(() => {
         generateStory();
       }, 100);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      onBack();
     }
   };
 
@@ -141,53 +160,80 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
   }
 
   const currentQuestion = storyQuestions[currentStep];
+  const progressPercentage = ((currentStep + 1) / storyQuestions.length) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-50 to-purple-100 p-4">
-      <div className="max-w-md mx-auto pt-4">
-        <div className="flex items-center mb-6">
-          <Button onClick={onBack} variant="ghost" className="text-purple-600 hover:text-purple-700 mr-4">
-            ← Terug
+      <div className="max-w-lg mx-auto pt-4">
+        {/* Header with back button and progress */}
+        <div className="flex items-center justify-between mb-6">
+          <Button onClick={handleBack} variant="ghost" className="text-purple-600 hover:text-purple-700">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {currentStep === 0 ? 'Menu' : 'Vorige'}
           </Button>
-          <div className="flex space-x-2">
-            {storyQuestions.map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full ${
-                  index <= currentStep ? 'bg-purple-500' : 'bg-purple-200'
-                }`}
-              />
-            ))}
+          <div className="text-sm text-purple-600 font-medium">
+            Stap {currentStep + 1} van {storyQuestions.length}
           </div>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm mb-6">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-purple-800 mb-4">
-              {currentQuestion.question}
+        {/* Progress bar */}
+        <div className="w-full bg-purple-200 rounded-full h-3 mb-8">
+          <div 
+            className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+
+        {/* Question card */}
+        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm mb-8">
+          <CardHeader className="text-center pb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <BookOpen className="w-8 h-8 text-white" />
+            </div>
+            <CardTitle className="text-2xl text-purple-800 mb-2">
+              {currentQuestion.title}
             </CardTitle>
+            <p className="text-purple-600 text-lg font-medium mb-2">
+              {currentQuestion.question}
+            </p>
+            <p className="text-purple-500 text-sm">
+              {currentQuestion.description}
+            </p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <div className="grid grid-cols-1 gap-4">
-              {currentQuestion.options.map((option) => (
+              {currentQuestion.options.map((option, index) => (
                 <Button
                   key={option.value}
                   onClick={() => handleChoice(option.value)}
-                  className="h-auto p-6 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-800 border-2 border-purple-200 hover:border-purple-300 transition-all"
+                  className="h-auto p-6 bg-gradient-to-r from-white to-purple-50 hover:from-purple-100 hover:to-pink-100 text-purple-800 border-2 border-purple-200 hover:border-purple-300 transition-all duration-200 transform hover:scale-105"
                   variant="ghost"
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="text-center w-full">
-                    <div className="text-3xl mb-2">{option.emoji}</div>
-                    <div className="text-lg font-medium mb-1">{option.label}</div>
-                    {option.description && (
-                      <div className="text-sm text-purple-600">{option.description}</div>
-                    )}
+                  <div className="text-left w-full">
+                    <div className="flex items-center mb-3">
+                      <div className="text-4xl mr-4">{option.emoji}</div>
+                      <div>
+                        <div className="text-lg font-semibold mb-1">{option.label}</div>
+                        <div className="text-sm text-purple-600">{option.description}</div>
+                      </div>
+                    </div>
                   </div>
                 </Button>
               ))}
             </div>
           </CardContent>
         </Card>
+
+        {/* Next button hint (optional) */}
+        {currentStep < storyQuestions.length - 1 && (
+          <div className="text-center">
+            <p className="text-purple-500 text-sm flex items-center justify-center">
+              Kies een optie om door te gaan
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
