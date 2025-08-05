@@ -1,9 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book, BookOpen } from "lucide-react";
 import { Story } from "@/types/Story";
+import { useAuth } from "@/hooks/useAuth";
+import { getUserStories } from "@/services/storyService";
 import StoryCreator from "./StoryCreator";
 import StoryLibrary from "./StoryLibrary";
 import StoryViewer from "./StoryViewer";
@@ -13,19 +15,56 @@ interface MainMenuProps {
   onLogout: () => void;
 }
 
-const MainMenu = ({ currentUser, onLogout }: MainMenuProps) => {
+const MainMenu = ({ currentUser }: MainMenuProps) => {
   const [showStoryCreator, setShowStoryCreator] = useState(false);
   const [showStoryLibrary, setShowStoryLibrary] = useState(false);
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const savedStories = JSON.parse(localStorage.getItem(`stories_${currentUser}`) || "[]") as Story[];
+  const { signOut } = useAuth();
+
+  useEffect(() => {
+    const loadStories = async () => {
+      try {
+        const userStories = await getUserStories();
+        setStories(userStories);
+      } catch (error) {
+        console.error('Error loading stories:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStories();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
+  };
+
+  const refreshStories = async () => {
+    try {
+      const userStories = await getUserStories();
+      setStories(userStories);
+    } catch (error) {
+      console.error('Error refreshing stories:', error);
+    }
+  };
 
   if (showStoryCreator) {
-    return <StoryCreator onBack={() => setShowStoryCreator(false)} currentUser={currentUser} />;
+    return <StoryCreator onBack={() => setShowStoryCreator(false)} onStoryCreated={refreshStories} />;
   }
 
   if (showStoryLibrary) {
-    return <StoryLibrary stories={savedStories} onBack={() => setShowStoryLibrary(false)} onSelectStory={setSelectedStory} />;
+    return (
+      <StoryLibrary 
+        stories={stories} 
+        onBack={() => setShowStoryLibrary(false)} 
+        onSelectStory={setSelectedStory}
+        onStoriesChanged={refreshStories}
+      />
+    );
   }
 
   if (selectedStory) {
@@ -40,7 +79,7 @@ const MainMenu = ({ currentUser, onLogout }: MainMenuProps) => {
             <h1 className="text-2xl font-bold text-purple-800">Hallo! 👋</h1>
             <p className="text-purple-600 text-sm">{currentUser.split('@')[0]}</p>
           </div>
-          <Button onClick={onLogout} variant="ghost" className="text-purple-600 hover:text-purple-700">
+          <Button onClick={handleLogout} variant="ghost" className="text-purple-600 hover:text-purple-700">
             Uitloggen
           </Button>
         </div>
@@ -64,14 +103,14 @@ const MainMenu = ({ currentUser, onLogout }: MainMenuProps) => {
             </CardContent>
           </Card>
 
-          {savedStories.length > 0 && (
+          {!loading && stories.length > 0 && (
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all cursor-pointer" onClick={() => setShowStoryLibrary(true)}>
               <CardContent className="p-6 text-center">
                 <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-bold text-purple-800 mb-2">Mijn Verhalen</h3>
-                <p className="text-purple-600">{savedStories.length} opgeslagen verhale{savedStories.length !== 1 ? 'n' : ''}</p>
+                <p className="text-purple-600">{stories.length} opgeslagen verhale{stories.length !== 1 ? 'n' : ''}</p>
               </CardContent>
             </Card>
           )}

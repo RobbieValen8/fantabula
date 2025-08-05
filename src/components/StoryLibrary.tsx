@@ -8,9 +8,10 @@ interface StoryLibraryProps {
   stories: Story[];
   onBack: () => void;
   onSelectStory: (story: Story) => void;
+  onStoriesChanged?: () => void;
 }
 
-const StoryLibrary = ({ stories, onBack, onSelectStory }: StoryLibraryProps) => {
+const StoryLibrary = ({ stories, onBack, onSelectStory, onStoriesChanged }: StoryLibraryProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 p-4">
       <div className="max-w-md mx-auto pt-4">

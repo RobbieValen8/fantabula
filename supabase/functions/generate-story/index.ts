@@ -173,7 +173,7 @@ Schrijf het verhaal in een warme, verhalende toon alsof een ouder het voorleest.
       .insert({
         user_id: user.id,
         title: title,
-        story: generatedStory,
+        content: generatedStory,
         choices: choices,
         age_group: ageText
       })

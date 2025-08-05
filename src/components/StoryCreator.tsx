@@ -5,15 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, ArrowLeft, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Story } from "@/types/Story";
-import { generateStoryWithAI } from "@/services/aiService";
+import { generateStoryWithAI } from "@/services/storyService";
 import StoryViewer from "./StoryViewer";
 
 interface StoryCreatorProps {
   onBack: () => void;
-  currentUser: string;
+  onStoryCreated?: () => void;
 }
 
-const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
+const StoryCreator = ({ onBack, onStoryCreated }: StoryCreatorProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [storyChoices, setStoryChoices] = useState<Record<string, string>>({});
   const [generatedStory, setGeneratedStory] = useState<Story | null>(null);
@@ -73,34 +73,26 @@ const StoryCreator = ({ onBack, currentUser }: StoryCreatorProps) => {
     console.log('Starting story generation with choices:', storyChoices);
     
     try {
-      const storyContent = await generateStoryWithAI(storyChoices);
-      
-      const characterNames = {
-        princess: 'de Prinses',
-        knight: 'de Ridder', 
-        animal: 'het Dier',
-        child: 'het Kind'
-      };
+      const result = await generateStoryWithAI(storyChoices);
       
       const newStory: Story = {
-        id: crypto.randomUUID(),
-        title: `Het Verhaal van ${characterNames[storyChoices.character as keyof typeof characterNames]}`,
-        story: storyContent,
+        id: result.id,
+        title: result.title,
+        story: result.story,
         choices: storyChoices,
         ageGroup: storyChoices.ageGroup === 'young' ? '3-6 jaar' : '7-12 jaar',
         createdAt: new Date().toISOString(),
-        imageUrl: `https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop&q=80`
       };
 
-      // Save to user's story collection
-      const existingStories = JSON.parse(localStorage.getItem(`stories_${currentUser}`) || "[]") as Story[];
-      existingStories.unshift(newStory);
-      localStorage.setItem(`stories_${currentUser}`, JSON.stringify(existingStories));
-      
-      console.log('Story saved successfully');
+      console.log('Story generated successfully');
       setGeneratedStory(newStory);
       setIsGenerating(false);
       toast.success("Je verhaal is klaar! 📖✨");
+      
+      // Call the callback to refresh stories in parent
+      if (onStoryCreated) {
+        onStoryCreated();
+      }
     } catch (error) {
       setIsGenerating(false);
       toast.error("Er ging iets mis bij het maken van je verhaal. Probeer het opnieuw!");
